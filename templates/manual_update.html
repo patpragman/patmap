@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manual Pat Update</title>
+</head>
+<body>
+
+<H3>Manually Update Pat Position</H3>
+
+<form id="update_pat_form" action="{{ url_for("update_pat") }}" method="POST">
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password">
+    <label for="latitude">Latitude:</label>
+    <input type="number" id="latitude" name="latitude" placeholder=0>
+
+    <label for="longitude">Longitude:</label>
+    <input type="number" id="longitude" name="longitude" placeholder=0>
+    <input type="submit" value="Submit">
+</form>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+<script>
+    document.getElementById('update_pat_form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var hashedPassword = CryptoJS.SHA256(document.getElementById('password').value).toString();
+        document.getElementById('password').value = hashedPassword;
+        this.submit();
+    });
+</script>
+
+</body>
+
+
+</html>

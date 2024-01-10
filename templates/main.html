@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-Time Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+</head>
+
+<body>
+    <div id="map" style="height: 400px;"></div>
+    <script>
+        // Initialize the map and set its view to our chosen geographical coordinates and a zoom level
+        var map = L.map('map').setView([61.217381, -149.863129], 13);
+
+        // Add a tile layer to add to our map
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Add a marker to the map
+        var iss_icon = L.icon({
+            iconUrl: "{{ url_for('static', filename='iss.png') }}",
+            iconSize: [64, 64],
+            iconAnchor: [32, 32],
+            popupAnchor: [-3, -76],
+            shadowUrl: "{{ url_for('static', filename='iss.png') }}",
+        });
+
+                // Add a marker to the map
+        var pat_icon = L.icon({
+            iconUrl: "{{ url_for('static', filename='pat.png') }}",
+            iconSize: [64, 64],
+            iconAnchor: [32, 32],
+            popupAnchor: [-3, -76],
+            shadowUrl: "{{ url_for('static', filename='pat.png') }}",
+        });
+
+
+        var iss_marker = L.marker([0, 0], {icon: iss_icon}).addTo(map);
+        var pat_marker = L.marker([0, 0], {icon: pat_icon}).addTo(map);
+
+        // Function to update the marker position
+        function updateISSMarker() {
+            fetch('/positions')
+                .then(function(response) {
+                    return response.json(); // Parse the JSON from the response
+                })
+                .then(function(data) {
+                    iss_marker.setLatLng([data.iss_position.latitude, data.iss_position.longitude]);
+                    pat_marker.setLatLng([data.pat_position.latitude, data.pat_position.longitude]);
+                    map.flyTo([data.pat_position.latitude, data.pat_position.longitude]);
+                })
+                .catch(function(error) {
+                    console.error('Error fetching position:', error);
+                });
+        }
+
+        // Function to update the pat position
+        function updatePatMarker() {
+            fetch('/pat_position')
+                .then(function(response) {
+                    return response.json(); // Parse the JSON from the response
+                })
+                .then(function(data) {
+                    iss_marker.setLatLng([data.iss_position.latitude, data.iss_position.longitude]); // Update marker position with new data
+                    map.flyTo([data.iss_position.latitude, data.iss_position.longitude]);
+                })
+                .catch(function(error) {
+                    console.error('Error fetching position:', error);
+                });
+        }
+
+        // Update marker position every 5 seconds
+        setInterval(updateISSMarker, 5000);
+    </script>
+</body>
+</html>
