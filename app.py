@@ -41,7 +41,7 @@ def positions():
         urllib.request.urlopen(url).read()
     )
 
-    positions['pat_position'] = {"latitude":pat_lat, "longitude":pat_lon}
+    positions['pat_position'] = {"latitude":pat_lats[-1], "longitude":pat_lons[-1]}
     return jsonify(positions)
 
 
