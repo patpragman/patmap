@@ -48,7 +48,6 @@
                 .then(function(data) {
                     iss_marker.setLatLng([data.iss_position.latitude, data.iss_position.longitude]);
                     pat_marker.setLatLng([data.pat_position.latitude, data.pat_position.longitude]);
-                    map.flyTo([data.pat_position.latitude, data.pat_position.longitude]);
                 })
                 .catch(function(error) {
                     console.error('Error fetching position:', error);
