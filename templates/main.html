@@ -7,6 +7,7 @@
 </head>
 
 <body>
+    <h3>Pat's Last Check-In</h3>
     <div id="map" style="height: 400px;"></div>
     <script>
         // Initialize the map and set its view to our chosen geographical coordinates and a zoom level
@@ -26,7 +27,7 @@
             shadowUrl: "{{ url_for('static', filename='iss.png') }}",
         });
 
-                // Add a marker to the map
+        // Add a pat marker to the map
         var pat_icon = L.icon({
             iconUrl: "{{ url_for('static', filename='pat.png') }}",
             iconSize: [64, 64],
@@ -47,7 +48,16 @@
                 })
                 .then(function(data) {
                     iss_marker.setLatLng([data.iss_position.latitude, data.iss_position.longitude]);
+                    iss_marker.bindPopup(`<b>ISS Position</b>
+<p>Latitude:  ${data.iss_position.latitude}, Longitude: ${data.iss_position.longitude}</p>
+<p>Latest refresh at ${data.iss_position.timestamp}</p>`
+                    );
+
                     pat_marker.setLatLng([data.pat_position.latitude, data.pat_position.longitude]);
+                    pat_marker.bindPopup(`<b>Pat Position</b>
+<p>Latitude:  ${data.pat_position.latitude}, Longitude: ${data.pat_position.longitude}</p>
+<p>Latest refresh at ${data.pat_position.timestamp}</p>`
+                    )
                 })
                 .catch(function(error) {
                     console.error('Error fetching position:', error);

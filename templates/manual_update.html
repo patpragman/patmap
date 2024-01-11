@@ -16,6 +16,8 @@
 
     <label for="longitude">Longitude:</label>
     <input type="number" id="longitude" name="longitude" placeholder=0>
+    <input type="hidden" id="timestamp" name="timestamp" placeholder=0>
+
     <input type="submit" value="Submit">
 </form>
 
@@ -25,6 +27,9 @@
         event.preventDefault();
         var hashedPassword = CryptoJS.SHA256(document.getElementById('password').value).toString();
         document.getElementById('password').value = hashedPassword;
+        // get the current timestamp now
+        document.getElementById("timestamp").value = (new Date()).toUTCString();
+
         this.submit();
     });
 </script>
