@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, request, redirect, abort
+from flask import Flask, jsonify, render_template, request, redirect, abort, send_from_directory
 import urllib.request
 import datetime
 import json
@@ -59,6 +59,10 @@ def manual_update():
 def main():
     return render_template("main.html")
 
+
+@app.route('/image/<filename>')
+def get_image(filename):
+    return send_from_directory('static/images', filename)
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0")
