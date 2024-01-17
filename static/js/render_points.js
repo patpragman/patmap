@@ -31,7 +31,7 @@ if (pat_marker) {
 var pat_marker = L.marker([0, 0], {icon: pat_icon}).addTo(map);
 
 // Function to update the marker position
-function updateISSMarker() {
+function update_markers() {
     fetch('/positions')
         .then(function(response) {
             return response.json(); // Parse the JSON from the response
@@ -54,21 +54,8 @@ function updateISSMarker() {
         });
 }
 
-// Function to update the pat position
-function updatePatMarker() {
-    fetch('/pat_position')
-        .then(function(response) {
-            return response.json(); // Parse the JSON from the response
-        })
-        .then(function(data) {
-            iss_marker.setLatLng([data.iss_position.latitude, data.iss_position.longitude]); // Update marker position with new data
-            map.flyTo([data.iss_position.latitude, data.iss_position.longitude]);
-        })
-        .catch(function(error) {
-            console.error('Error fetching position:', error);
-        });
-}
+
 
 // Update marker position every 5 seconds
-setInterval(updatePatMarker, 5000);
-setInterval(updateISSMarker, 5000);
+setInterval(update_markers, 5000);
+
