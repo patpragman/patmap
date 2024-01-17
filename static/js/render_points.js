@@ -24,10 +24,6 @@ var pat_icon = L.icon({
 
 
 var iss_marker = L.marker([0, 0], {icon: iss_icon}).addTo(map);
-if (pat_marker) {
-    map.removeLayer(pat_marker);
-}
-
 var pat_marker = L.marker([0, 0], {icon: pat_icon}).addTo(map);
 
 // Function to update the marker position
@@ -37,6 +33,8 @@ function update_markers() {
             return response.json(); // Parse the JSON from the response
         })
         .then(function(data) {
+
+
             iss_marker.setLatLng([data.iss_position.latitude, data.iss_position.longitude]);
             iss_marker.bindPopup(`<b>ISS Position</b>
 <p>Latitude:  ${data.iss_position.latitude}, Longitude: ${data.iss_position.longitude}</p>
