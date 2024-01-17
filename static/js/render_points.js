@@ -34,7 +34,9 @@ function update_markers() {
 
             map.eachLayer((layer) => {
               if (layer instanceof L.Marker) {
-                 layer.remove();
+                if (map.hasLayer(layer)) {
+                    map.removeLayer(layer); // remove
+                }
               }
             });
             var iss_marker = L.marker([data.iss_position.latitude, data.iss_position.longitude], {icon: iss_icon});
