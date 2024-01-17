@@ -1,3 +1,4 @@
+// initiate the map, center it on anchorage
 var map = L.map('map').setView([61.217381, -149.863129], 13);
 
 // Add a tile layer to add to our map
@@ -23,9 +24,6 @@ var pat_icon = L.icon({
 });
 
 
-var iss_marker = L.marker([0, 0], {icon: iss_icon}).addTo(map);
-var pat_marker = L.marker([0, 0], {icon: pat_icon}).addTo(map);
-
 // Function to update the marker position
 function update_markers() {
     fetch('/positions')
@@ -34,14 +32,19 @@ function update_markers() {
         })
         .then(function(data) {
 
+            map.eachLayer((layer) => {
+              if (layer instanceof L.Marker) {
+                 layer.remove();
+              }
+            });
+            var iss_marker = L.marker([data.iss_position.latitude, data.iss_position.longitude], {icon: iss_icon}).addTo(map);
+            var pat_marker = L.marker([data.pat_position.latitude, data.pat_position.longitude], {icon: pat_icon}).addTo(map);
 
-            iss_marker.setLatLng([data.iss_position.latitude, data.iss_position.longitude]);
             iss_marker.bindPopup(`<b>ISS Position</b>
 <p>Latitude:  ${data.iss_position.latitude}, Longitude: ${data.iss_position.longitude}</p>
 <p>Latest refresh at ${data.iss_position.timestamp}</p>`
             );
 
-            pat_marker.setLatLng([data.pat_position.latitude, data.pat_position.longitude]);
             pat_marker.bindPopup(`<b>Pat Position</b>
 <p>Latitude:  ${data.pat_position.latitude}, Longitude: ${data.pat_position.longitude}</p>
 <p>Latest refresh at ${data.pat_position.timestamp}</p>`
