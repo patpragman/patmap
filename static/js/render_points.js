@@ -70,4 +70,5 @@ function updatePatMarker() {
 }
 
 // Update marker position every 5 seconds
+setInterval(updatePatMarker, 5000);
 setInterval(updateISSMarker, 5000);
