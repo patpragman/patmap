@@ -37,8 +37,10 @@ function update_markers() {
                  layer.remove();
               }
             });
-            var iss_marker = L.marker([data.iss_position.latitude, data.iss_position.longitude], {icon: iss_icon}).addTo(map);
-            var pat_marker = L.marker([data.pat_position.latitude, data.pat_position.longitude], {icon: pat_icon}).addTo(map);
+            var iss_marker = L.marker([data.iss_position.latitude, data.iss_position.longitude], {icon: iss_icon});
+            iss_marker.addTo(map);
+            var pat_marker = L.marker([data.pat_position.latitude, data.pat_position.longitude], {icon: pat_icon});
+            pat_marker.addTo(map);
 
             iss_marker.bindPopup(`<b>ISS Position</b>
 <p>Latitude:  ${data.iss_position.latitude}, Longitude: ${data.iss_position.longitude}</p>
