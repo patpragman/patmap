@@ -7,32 +7,40 @@ url = "http://api.open-notify.org/iss-now.json"
 
 app = Flask(__name__)
 
-pat_lats = [61.217381]
-pat_lons = [-149.863129]
-pat_times = [datetime.datetime.utcnow()]
+
+def save_data(data, filename='data.json'):
+    with open(filename, 'w') as file:
+        json.dump(data, file)
+
+
+def get_data(filename="data.json"):
+    with open(filename, 'r') as readfile:
+        return json.load(readfile)
 
 
 @app.route('/update_pat',
            methods=['POST']
            )
 def update_pat():
-    global pat_lats, pat_lons, pat_times
+    current_data = get_data()
+
     with open('access.txt', "r") as file:
         stored_creds = file.read()
-
     password = request.form['password']
     # Compare the hashed password with stored credentials
     if password == stored_creds:
-        pat_lat, pat_lon = float(request.form['latitude']), float(request.form['longitude'])
-        pat_time = request.form['timestamp']
-        pat_lats.append(pat_lat)
-        pat_lons.append(pat_lon)
-        pat_times.append(pat_time)
+        lat, lon = float(request.form['latitude']), float(request.form['longitude'])
+        timestamp = request.form['timestamp']
+        current_data['pat_position']['latitudes'].append(lat)
+        current_data['pat_position']['longitudes'].append(lon)
+        current_data['pat_position']['timestamps'].append(timestamp)
 
-        while len(pat_lons) > 10:
-            pat_lons.pop(0)
-            pat_lats.pop(0)
-            pat_times.pop(0)
+        while len(current_data['pat_position']['timestamps']) > 10:
+            current_data['pat_position']['timestamps'].pop(0)
+            current_data['pat_position']['longitudes'].pop(0)
+            current_data['pat_position']['latitudes'].pop(0)
+
+        save_data(current_data)
     else:
         # If they do not match, return a 401 Unauthorized error
         abort(401)  # This will stop the function and return the error to the client
@@ -42,9 +50,7 @@ def update_pat():
 
 @app.route('/positions')
 def positions():
-    positions = {}
-    positions['pat_position'] = {"latitudes": pat_lats, "longitudes": pat_lons, "timestamps": pat_times}
-    return jsonify(positions)
+    return jsonify(get_data())
 
 
 @app.route('/manual_update')
