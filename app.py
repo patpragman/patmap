@@ -9,7 +9,8 @@ app = Flask(__name__)
 
 pat_lats = [61.217381]
 pat_lons = [-149.863129]
-pat_times = [datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")]
+pat_times = [datetime.datetime.utcnow()]
+
 
 @app.route('/update_pat',
            methods=['POST']
@@ -41,19 +42,15 @@ def update_pat():
 
 @app.route('/positions')
 def positions():
-    positions = json.loads(
-        urllib.request.urlopen(url).read()
-    )
-    iss_info_timestamp = datetime.datetime.utcnow()
-    positions['iss_position']["timestamp"] = iss_info_timestamp.strftime("%a, %d %b %Y %H:%M:%S GMT")
-
-    positions['pat_position'] = {"latitude":pat_lats[-1], "longitude":pat_lons[-1], "timestamp": pat_times[-1]}
+    positions = {}
+    positions['pat_position'] = {"latitudes": pat_lats, "longitudes": pat_lons, "timestamps": pat_times}
     return jsonify(positions)
 
 
 @app.route('/manual_update')
 def manual_update():
     return render_template("manual_update.html")
+
 
 @app.route('/')
 def main():
@@ -63,6 +60,7 @@ def main():
 @app.route('/image/<filename>')
 def get_image(filename):
     return send_from_directory('static/images', filename)
+
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0")

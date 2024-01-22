@@ -1,28 +1,32 @@
 // initiate the map, center it on anchorage
 var map = L.map('map').setView([61.217381, -149.863129], 13);
+var markers = [];
 
 // Add a tile layer to add to our map
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
 }).addTo(map);
 
-// Add a marker to the map
-var iss_icon = L.icon({
-    iconUrl: "/image/iss.png",
-    iconSize: [64, 64],
-    iconAnchor: [32, 32],
-    popupAnchor: [-3, -76],
-    shadowUrl: "/image/iss.png",
-});
+function zip(arr1, arr2) {
+    return arr1.map((k, i) => [k, arr2[i]]);
+}
+
 
 // Add a pat marker to the map
-var pat_icon = L.icon({
+const pat_icon = L.icon({
     iconUrl: "/image/pat.png",
     iconSize: [64, 64],
     iconAnchor: [32, 32],
     popupAnchor: [-3, -76],
 });
 
+
+// Add a pat marker to the map
+const dot_icon = L.icon({
+    iconUrl: "/image/dot.png",
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+});
 
 // Function to update the marker position
 function update_markers() {
@@ -32,32 +36,35 @@ function update_markers() {
         })
         .then(function(data) {
 
-            map.eachLayer((layer) => {
-              if (layer instanceof L.Marker) {
-                if (map.hasLayer(layer)) {
-                    map.removeLayer(layer); // remove
-                }
-              }
+
+
+            markers.forEach(function(marker){
+                map.removeLayer(marker);
             });
-            var iss_marker = L.marker([data.iss_position.latitude, data.iss_position.longitude], {icon: iss_icon});
-            iss_marker.addTo(map);
-            var pat_marker = L.marker([data.pat_position.latitude, data.pat_position.longitude], {icon: pat_icon});
-            pat_marker.addTo(map);
 
-            iss_marker.bindPopup(`<b>ISS Position</b>
-<p>Latitude:  ${data.iss_position.latitude}, Longitude: ${data.iss_position.longitude}</p>
-<p>Latest refresh at ${data.iss_position.timestamp}</p>`
-            );
+            let coordinates = zip(zip(data.pat_position.latitudes, data.pat_position.longitudes), data.pat_position.timestamps);
 
-            pat_marker.bindPopup(`<b>Pat Position</b>
-<p>Latitude:  ${data.pat_position.latitude}, Longitude: ${data.pat_position.longitude}</p>
-<p>Latest refresh at ${data.pat_position.timestamp}</p>`
-            )
-        })
-        .catch(function(error) {
-            console.error('Error fetching position:', error);
-        });
-}
+
+            coordinates.forEach(function(coord) {
+                let lat = coord[0][0];
+                let lon = coord[0][1];
+                let timeStamp = coord[1];
+                let popupContent = `
+                    <h3>Position: ${lat}, ${lon}</h3>
+                    <p>Timestamp: ${timeStamp}</p>
+                `;
+
+                var marker = L.marker([lat, lon], {icon:dot_icon}).addTo(map);
+                marker.bindPopup(popupContent);
+                markers.push(marker);
+            })
+
+            // change the last icon
+            if (markers.length > 0) {
+                console.log("here!")
+                markers[markers.length - 1].setIcon(pat_icon);
+            }
+})};
 
 
 

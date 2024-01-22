@@ -28,7 +28,7 @@
         var hashedPassword = CryptoJS.SHA256(document.getElementById('password').value).toString();
         document.getElementById('password').value = hashedPassword;
         // get the current timestamp now
-        document.getElementById("timestamp").value = (new Date()).toUTCString();
+        document.getElementById("timestamp").value = Math.floor((new Date()).getTime() / 1000);
 
         this.submit();
     });
