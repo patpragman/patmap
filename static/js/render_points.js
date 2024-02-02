@@ -1,4 +1,6 @@
-// initiate the map, center it on anchorage
+// initiate the map, center it on anchorage, get the timezone and other options
+
+// const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const MAXITEMS = 10;
 const map = L.map('map').setView([61.217381, -149.863129], 13);
 let markers = [];  // store all the markers in this
@@ -25,13 +27,15 @@ const dot_icon = L.icon({
 
 class MarkerPoint {
     // define the marker point class we'll build
-    constructor(lat, lon, timestamp) {
+    constructor(lat, lon, timestamp, data) {
+        this.data = data
         this.latitude = lat;
         this.longitude = lon;
         this.timestamp = timestamp;
         this.marker = L.marker([this.latitude, this.longitude], {icon:dot_icon});
         this.popupContent = `<h3>Position: ${this.latitude}, ${this.longitude}</h3>
-<p>Timestamp: ${this.timestamp}</p>`;
+<p>Timestamp: ${this.getTZAdjustedDateTimeString()} UTC</p>
+<p>Data: ${this.data}</p>`;
     }
 
     equals(otherMarkerPoint) {
@@ -40,11 +44,19 @@ class MarkerPoint {
                 this.longitude === otherMarkerPoint.longitude &&
                 this.timestamp === otherMarkerPoint.timestamp;
     }
+
+    getTZAdjustedDateTimeString() {
+        return new Date(this.timestamp * 1000).toLocaleString();
+    }
 }
 
 
-function zip(arr1, arr2) {
-    return arr1.map((k, i) => [k, arr2[i]]);
+function zip(...arrays) {
+    // chatGPT inspired zip function to mimic python
+    // zips together as many arrays as you want, but be careful, if one is shorter than another... you're in trouble
+    // it will only go to the shortest array
+    const length = Math.min(...arrays.map(arr => arr.length));
+    return Array.from({ length }, (_, i) => arrays.map(array => array[i]));
 }
 
 
@@ -56,14 +68,20 @@ function update_markers() {
         })
         .then(function(data) {
 
-            let coordinates = zip(zip(data.pat_position.latitudes, data.pat_position.longitudes), data.pat_position.timestamps);
-
+            let coordinates = zip(
+                data.pat_position.latitudes,
+                data.pat_position.longitudes,
+                data.pat_position.timestamps,
+                data.pat_position.data
+            )
 
             coordinates.forEach(function(coord) {
-                let lat = coord[0][0];
-                let lon = coord[0][1];
-                let timeStamp = coord[1];
-                let marker = new MarkerPoint(lat, lon, timeStamp);
+                let lat = coord[0];
+                let lon = coord[1];
+                let timeStamp = coord[2];
+                let data = coord[3];
+
+                let marker = new MarkerPoint(lat, lon, timeStamp, data);
                 if (!markers.some(otherMarker => marker.equals(otherMarker))){
                     // if the marker isn't in the list, add it to the list, then add it to the map, and bind
                     // a popup to it
@@ -82,10 +100,7 @@ function update_markers() {
                 markers[markers.length - 1].marker.setIcon(pat_icon);
             }
 
-            // now get rid of all the items less than MAXITEMS
-            while (markers.length > MAXITEMS){
-                markers.shift().marker.remove()
-            }
+
 })};
 
 

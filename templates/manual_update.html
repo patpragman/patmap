@@ -8,7 +8,7 @@
 
 <H3>Manually Update Pat Position</H3>
 
-<form id="update_pat_form" action="{{ url_for("update_pat") }}" method="POST">
+<form id="update" action="{{ url_for("point_ingest") }}" method="POST">
     <label for="password">Password:</label>
     <input type="password" id="password" name="password">
     <label for="latitude">Latitude:</label>
@@ -17,7 +17,7 @@
     <label for="longitude">Longitude:</label>
     <input type="number" id="longitude" name="longitude" placeholder=0>
     <input type="hidden" id="timestamp" name="timestamp" placeholder=0>
-
+    <input type="hidden" id="asset" name="asset" placeholder="pat_position">
     <input type="submit" value="Submit">
 </form>
 
