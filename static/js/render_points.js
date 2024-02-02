@@ -1,3 +1,21 @@
+
+// this code initializes the date picker properly.
+let maximumLookbackDate = 0;
+flatpickr("#datetimePicker", {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+    minDate: "1970-01-01", // Minimum date
+    onChange: function(selectedDates, dateStr, instance) {
+        // Update the variable with the new date string
+        console.log(selectedDates);
+        if (selectedDates.length > 0) {
+            // Convert the selected date to a Unix timestamp (in seconds)
+            maximumLookbackDate = Math.floor(selectedDates[0].getTime() * 1000);
+        }
+    }
+});
+
+
 // initiate the map, center it on anchorage, get the timezone and other options
 
 // const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -100,6 +118,14 @@ function update_markers() {
                         marker.marker.bindPopup(marker.popupContent);
                     }
                 })
+                // get rid of the markers with too low a timestamp
+                markers[key].forEach(
+                    m => {
+                        if (m.timestamp <= maximumLookbackDate){
+                            map.removeLayer(m.marker);
+                        }
+                    }
+                );
 
                 markers[key].forEach(function (marker){
                     // just clean things up by resetting any markers that have changed

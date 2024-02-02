@@ -2,16 +2,30 @@
 <html>
 <head>
     <title>Real-Time Map</title>
+    <!--Leaflet.js dependencies-->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+
+    <!--bootstrap -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.0/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- flatpickr CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+    <!-- flatpickr JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 </head>
 
 <body>
     <h3>Check-In Map</h3>
-    <div id="map" style="height: 400px;"></div>
-        <script src="{{ url_for('static', filename='js/render_points.js') }}">
+    <div id="map" style="height: 400px;"class="container mt-5">
+        <input type="text" class="form-control" id="datetimePicker" value="1970-01-01 00:01">
+    </div>
 
-        </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.0/js/bootstrap.bundle.min.js"> </script>
+    <script src="{{ url_for('static', filename='js/render_points.js') }}">
+
+    </script>
     </script>
 </body>
 </html>

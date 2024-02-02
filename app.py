@@ -1,6 +1,4 @@
 from flask import Flask, jsonify, render_template, request, redirect, abort, send_from_directory
-import urllib.request
-import datetime
 import json
 import os
 import logging
@@ -88,11 +86,6 @@ def main():
 def get_image(filename):
     return send_from_directory('static/images', filename)
 
-@app.route('/list_icons')
-def list_icons():
-    # send a list of the possible icons back
-    icons_directory = 'static/images'
-    return jsonify(os.listdir(icons_directory))
 
 if __name__ == '__main__':
     app.run(debug=True)

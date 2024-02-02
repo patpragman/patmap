@@ -23,7 +23,19 @@ for lat, lon in zip(range(0, 45), range(-105, -60)):
     data = {
         "asset": 'alex',
         'password': pword,
-        "timestamp": dt.datetime.utcnow().timestamp(),
+        "timestamp": 1600000000 + lon * 10_000,
+        "latitude": lat, "longitude": lon
+    }
+    response = requests.post(url, data=data)
+    print(response)
+    sleep(0.1)
+
+for lon in range(-180, 180):
+    lat = 10
+    data = {
+        "asset": 'tyler',
+        'password': pword,
+        "timestamp": 1700000000 + lon * 10_000,
         "latitude": lat, "longitude": lon
     }
     response = requests.post(url, data=data)
