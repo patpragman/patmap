@@ -14,7 +14,7 @@ url = "http://api.open-notify.org/iss-now.json"
 
 app = Flask(__name__)
 
-data_template = {"pat_position": {"latitudes": [], "longitudes": [], "timestamps": [], "data": []}}
+data_template = {"latitudes": [], "longitudes": [], "timestamps": [], "data": []}
 
 
 def save_data(data, filename='data.json'):
@@ -27,7 +27,7 @@ def get_data(filename="data.json"):
         with open(filename, 'r') as readfile:
             return json.load(readfile)
     else:
-        return data_template
+        return {}
 
 def process_form(form) -> dict:
     # process all the data and return a nice dictionary we can iterate through
@@ -50,6 +50,10 @@ def point_ingest():
     if authenticate_logon_form(form):
         current_data = get_data()
         asset = form['asset']
+
+        if asset not in current_data:
+            current_data[asset] = data_template
+
         new_data_from_form = process_form(form)
 
         for key, value in new_data_from_form.items():
@@ -75,7 +79,6 @@ def positions():
 def manual_update():
     return render_template("manual_update.html")
 
-
 @app.route('/')
 def main():
     return render_template("main.html")
@@ -85,6 +88,11 @@ def main():
 def get_image(filename):
     return send_from_directory('static/images', filename)
 
+@app.route('/list_icons')
+def list_icons():
+    # send a list of the possible icons back
+    icons_directory = 'static/images'
+    return jsonify(os.listdir(icons_directory))
 
 if __name__ == '__main__':
     app.run(debug=True)

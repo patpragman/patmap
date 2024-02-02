@@ -3,19 +3,14 @@
 // const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 const MAXITEMS = 10;
 const map = L.map('map').setView([61.217381, -149.863129], 13);
-let markers = [];  // store all the markers in this
+
+let markers = {};  // we'll store the markers in here
+
+
 // Add a tile layer to add to our map
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
 }).addTo(map);
-
-// Add a pat marker to the map
-const pat_icon = L.icon({
-    iconUrl: "/image/pat.png",
-    iconSize: [64, 64],
-    iconAnchor: [32, 32],
-    popupAnchor: [-3, -76],
-});
 
 
 // Add a dot marker to the map
@@ -27,13 +22,20 @@ const dot_icon = L.icon({
 
 class MarkerPoint {
     // define the marker point class we'll build
-    constructor(lat, lon, timestamp, data) {
+    constructor(lat, lon, timestamp, data, icon_key) {
         this.data = data
         this.latitude = lat;
         this.longitude = lon;
         this.timestamp = timestamp;
+        this.icon = L.icon({
+                        iconUrl: `/image/${icon_key}.png`,
+                        iconSize: [64, 64],
+                        iconAnchor: [32, 32],
+                        popupAnchor: [-3, -32],
+                    });
+        this.assetName = icon_key;
         this.marker = L.marker([this.latitude, this.longitude], {icon:dot_icon});
-        this.popupContent = `<h3>Position: ${this.latitude}, ${this.longitude}</h3>
+        this.popupContent = `<h3>${this.assetName} Position: ${this.latitude}, ${this.longitude}</h3>
 <p>Timestamp: ${this.getTZAdjustedDateTimeString()} UTC</p>
 <p>Data: ${this.data}</p>`;
     }
@@ -68,40 +70,55 @@ function update_markers() {
         })
         .then(function(data) {
 
-            let coordinates = zip(
-                data.pat_position.latitudes,
-                data.pat_position.longitudes,
-                data.pat_position.timestamps,
-                data.pat_position.data
-            )
-
-            coordinates.forEach(function(coord) {
-                let lat = coord[0];
-                let lon = coord[1];
-                let timeStamp = coord[2];
-                let data = coord[3];
-
-                let marker = new MarkerPoint(lat, lon, timeStamp, data);
-                if (!markers.some(otherMarker => marker.equals(otherMarker))){
-                    // if the marker isn't in the list, add it to the list, then add it to the map, and bind
-                    // a popup to it
-                    markers.push(marker);
-                    marker.marker.addTo(map);
-                    marker.marker.bindPopup(marker.popupContent);
+            for (const key in data){
+                // first, see if that key is in the markers object
+                if (!markers.hasOwnProperty(key)){
+                    // add an array to that
+                    markers[key] = [];
                 }
-            })
 
-            markers.forEach(function (marker){
-                marker.marker.setIcon(dot_icon);
-            })
+                // now iterate through the items in the data packet coming from the server, first zip
+                let coordinates = zip(
+                data[key].latitudes,
+                data[key].longitudes,
+                data[key].timestamps,
+                data[key].data)
 
-            // change the last icon
-            if (markers.length > 0) {
-                markers[markers.length - 1].marker.setIcon(pat_icon);
+                coordinates.forEach(function(coord) {
+                    let lat = coord[0];
+                    let lon = coord[1];
+                    let timeStamp = coord[2];
+                    let data = coord[3];
+
+                    // make a marker for each incoming point
+                    let marker = new MarkerPoint(lat, lon, timeStamp, data, key);
+                    if (!markers[key].some(otherMarker => marker.equals(otherMarker))){
+                        // if the marker isn't in the list, add it to the list, then add it to the map, and bind
+                        // a popup to it
+                        markers[key].push(marker);
+                        marker.marker.addTo(map);
+                        marker.marker.bindPopup(marker.popupContent);
+                    }
+                })
+
+                markers[key].forEach(function (marker){
+                    // just clean things up by resetting any markers that have changed
+                    marker.marker.setIcon(dot_icon);
+                })
+
+                // finally, change the last icon
+                if (markers[key].length > 0) {
+                    // get the last marker
+                    let lastMarker = markers[key][markers[key].length - 1];
+                    // now that markers icon
+
+                    lastMarker.marker.setIcon(
+                        lastMarker.icon
+                    );
+                }
             }
-
-
-})};
+        })
+};
 
 
 
