@@ -116,9 +116,7 @@ function refreshMarkers(){
         }
         markers[key].forEach(
                     m => {
-                        console.log(key);
-                        console.log(m.isVisible);
-                        console.log(map.hasLayer(m.marker));
+
                         if (m.isVisible && map.hasLayer(m.marker)) {
                             // do nothing
                         } else if (m.isVisible && !map.hasLayer(m.marker)) {

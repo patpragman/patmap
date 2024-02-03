@@ -3,7 +3,6 @@ import json
 import os
 import logging
 from hashlib import sha256
-from copy import deepcopy
 
 # Configure logging
 logging.basicConfig(filename='positions.log', level=logging.DEBUG,
