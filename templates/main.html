@@ -18,8 +18,19 @@
 
 <body>
     <h3>Check-In Map</h3>
+
+    <input type="text" class="form-control" id="datetimePicker"><button type="button" id="clearButton">Clear Date Range</button>
+
+    <!--
+    I don't like this for now - I don't know what to do next, but this... I don't like it.
+    <select name="assetDropdownChoice" id="assetDropdown" multiple>
+        {% for option in assets %}
+            <option value="{{ option }}" selected>{{ option }}</option>
+        {% endfor %}
+    </select>
+    -->
     <div id="map" style="height: 400px;"class="container mt-5">
-        <input type="text" class="form-control" id="datetimePicker" value="1970-01-01 00:01">
+
     </div>
 
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.0/js/bootstrap.bundle.min.js"> </script>

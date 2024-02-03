@@ -2,6 +2,8 @@ from flask import Flask, jsonify, render_template, request, redirect, abort, sen
 import json
 import os
 import logging
+from hashlib import sha256
+from copy import deepcopy
 
 # Configure logging
 logging.basicConfig(filename='positions.log', level=logging.DEBUG,
@@ -11,8 +13,6 @@ logging.basicConfig(filename='positions.log', level=logging.DEBUG,
 url = "http://api.open-notify.org/iss-now.json"
 
 app = Flask(__name__)
-
-data_template = {"latitudes": [], "longitudes": [], "timestamps": [], "data": []}
 
 
 def save_data(data, filename='data.json'):
@@ -50,13 +50,19 @@ def point_ingest():
         asset = form['asset']
 
         if asset not in current_data:
-            current_data[asset] = data_template
+            # simple data template - be careful because of list mutability
+            current_data[asset] = {"uniqueID": [], "latitudes": [], "longitudes": [], "timestamps": [], "data": []}
 
         new_data_from_form = process_form(form)
 
         for key, value in new_data_from_form.items():
             # iterate through the new data and append it to the current data
             current_data[asset][key].append(value)
+
+        # generate a unique id for each point so we can keep track!
+        current_data[asset]["uniqueID"].append(
+            sha256(str(new_data_from_form).encode()).hexdigest()
+        )
 
         app.logger.info(f"{asset} logging {new_data_from_form}")
         save_data(current_data)
@@ -75,11 +81,14 @@ def positions():
 
 @app.route('/manual_update')
 def manual_update():
-    return render_template("manual_update.html")
+    assets = [os.path.splitext(p)[0] for p in os.listdir("static/images") if os.path.splitext(p)[0]]
+    return render_template("manual_update.html", assets=assets)
 
 @app.route('/')
 def main():
-    return render_template("main.html")
+    assets = [os.path.splitext(p)[0] for p in os.listdir("static/images") if os.path.splitext(p)[0]]
+    assets.remove("dot")  # dot is a protected name!
+    return render_template("main.html", assets=assets)
 
 
 @app.route('/image/<filename>')

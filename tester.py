@@ -16,9 +16,13 @@ for lat, lon in zip(range(0, 45), range(0, 45)):
         "latitude": lat, "longitude": lon
     }
     response = requests.post(url, data=data)
-    print(response)
-    sleep(0.1)
+    sleep(0.2)
 
+    print(response)
+
+
+
+sleep(3)
 for lat, lon in zip(range(0, 45), range(-105, -60)):
     data = {
         "asset": 'alex',
@@ -27,8 +31,15 @@ for lat, lon in zip(range(0, 45), range(-105, -60)):
         "latitude": lat, "longitude": lon
     }
     response = requests.post(url, data=data)
+    sleep(0.2)
     print(response)
-    sleep(0.1)
+
+# send some extras
+for i in range(0, 10):
+    response = requests.post(url, data=data)
+    sleep(0.2)
+    print(response)
+sleep(3)
 
 for lon in range(-180, 180):
     lat = 10
@@ -40,4 +51,19 @@ for lon in range(-180, 180):
     }
     response = requests.post(url, data=data)
     print(response)
-    sleep(0.1)
+
+sleep(3)
+
+
+for lon in range(-180, 180):
+    lat = 20
+    data = {
+        "asset": 'laura',
+        'password': pword,
+        "timestamp": 1500000000 + lon * 10_000,
+        "latitude": lat, "longitude": lon
+    }
+    response = requests.post(url, data=data)
+    print(response)
+
+sleep(3)
