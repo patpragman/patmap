@@ -64,7 +64,7 @@ class MarkerPoint {
                     });
         this.assetName = icon_key;
         this.marker = L.marker([this.latitude, this.longitude], {icon:dot_icon});
-        this.popupContent = `<h3>${this.assetName} Position: ${this.latitude}, ${this.longitude}</h3>
+        this.popupContent = `<h3>${this.assetName} Position: ${this.latitude}, ${this.longitude}</h3>`
         this.isVisible = false;
         
 <p>Timestamp: ${this.getTZAdjustedDateTimeString()}</p>
