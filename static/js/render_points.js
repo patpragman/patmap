@@ -64,12 +64,14 @@ class MarkerPoint {
                     });
         this.assetName = icon_key;
         this.marker = L.marker([this.latitude, this.longitude], {icon:dot_icon});
-        this.popupContent = `<h3>${this.assetName} Position: ${this.latitude}, ${this.longitude}</h3>`
-        this.isVisible = false;
+        this.popupContent = `<h3>${this.assetName} Position: ${this.latitude}, ${this.longitude}</h3>
         
 <p>Timestamp: ${this.getTZAdjustedDateTimeString()}</p>
 <p>Data: ${this.data}</p>`;
+        this.isVisible = false;
+
     }
+
 
     equals(otherMarkerPoint) {
         return this.uniqueID === otherMarkerPoint.uniqueID;
