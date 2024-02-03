@@ -188,6 +188,6 @@ function update_markers() {
 
 
 // Update marker position every 5 seconds
-setInterval(update_markers, 2000);
+setInterval(update_markers, 4000);
 
 
