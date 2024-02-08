@@ -3,6 +3,7 @@ import json
 import os
 import logging
 from hashlib import sha256
+from datetime import datetime as dt
 
 # Configure logging
 logging.basicConfig(filename='positions.log', level=logging.DEBUG,
@@ -40,7 +41,10 @@ def authenticate_logon_form(form) -> bool:
 @app.route('/point_ingest', methods=['POST'])
 def point_ingest():
     # get the data from the form
-    form = request.form
+    if request.is_json():
+        form = request.get_json()
+    else:
+        form = request.form
 
     if authenticate_logon_form(form):
         current_data = get_data()
@@ -61,13 +65,16 @@ def point_ingest():
             sha256(str(new_data_from_form).encode()).hexdigest()
         )
 
-        app.logger.info(f"{asset} logging {new_data_from_form}")
+        app.logger.info(f"{asset} logging {new_data_from_form}.  Ingest at {int(dt.utcnow().timestamp())}")
         save_data(current_data)
+
+        response = {"message": f"point logged at {int(dt.utcnow().timestamp())}"}
+
     else:
         app.logger.error(f'Error 401 from {request.remote_addr}...')
         abort(401)  # This will stop the function and return the error to the client
 
-    return redirect("/")
+    return jsonify(response), 200
 
 
 
