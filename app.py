@@ -44,8 +44,10 @@ def point_ingest():
     # debugging change me:
     print(request.headers)
     if request.is_json:
+        print('JSON!')
         form = request.get_json()
     else:
+        print('NORMAL FORM')
         form = request.form
 
     print(form)
