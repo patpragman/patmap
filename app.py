@@ -41,7 +41,7 @@ def authenticate_logon_form(form) -> bool:
 @app.route('/point_ingest', methods=['POST'])
 def point_ingest():
     # get the data from the form
-    if request.is_json():
+    if request.is_json:
         form = request.get_json()
     else:
         form = request.form
