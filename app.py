@@ -9,8 +9,6 @@ logging.basicConfig(filename='positions.log', level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
 
-url = "http://api.open-notify.org/iss-now.json"
-
 app = Flask(__name__)
 
 
