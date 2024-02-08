@@ -28,6 +28,15 @@ def gps_time_to_rtc_time(result):
     return (year, month, day, 0, hours, minutes, seconds, 0)
 
 
+def blink_neopixel(colorOne, colorTwo):
+    for i in range(100):
+        if i % 10 == 0:
+            picoLTE.peripherals.adjust_neopixel(*colorOne)
+        else:
+            picoLTE.peripherals.adjust_neopixel(*colorTwo)
+        time.sleep_ms(25)
+
+
 # loop while power is on
 # todo:  set up timer where light is only green if you've pushed a position in the last 5 minutes, for now just learning
 last_fix_ingest = 0  # clean slate when we start up
@@ -36,6 +45,7 @@ picoLTE = PicoLTE()
 picoLTE.http.set_server_url(POINT_INGEST_URL)
 picoLTE.http.set_content_type(4)
 
+blink_neopixel(STATUS_ERROR_COLOR, ALERT_COLOR)
 picoLTE.peripherals.adjust_neopixel(*ALERT_COLOR)
 while True:
 
@@ -100,11 +110,13 @@ while True:
 
             debug.info("Message sent successfully.")
             last_fix_ingest = time.time()
-        elif time.time() - last_fix_ingest >= MAX_TIME_BETWEEN_UPDATES:
-            picoLTE.peripherals.adjust_neopixel(*STATUS_ERROR_COLOR)
         else:
             picoLTE.peripherals.adjust_neopixel(*STATUS_ERROR_COLOR)
             debug.error(result["status"])
+
+    # blink neopixel between error and red if you have exceeded the allowable time
+    if time.time() - last_fix_ingest >= MAX_TIME_BETWEEN_UPDATES:
+        blink_neopixel(STATUS_ERROR_COLOR, ALERT_COLOR)
 
     time.sleep(30)  # 30 seconds between each request.
 
