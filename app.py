@@ -42,11 +42,13 @@ def authenticate_logon_form(form) -> bool:
 def point_ingest():
     # get the data from the form
     # debugging change me:
-    print(request)
+    print(request.headers)
     if request.is_json:
         form = request.get_json()
     else:
         form = request.form
+
+    print(form)
 
     if authenticate_logon_form(form):
         current_data = get_data()
