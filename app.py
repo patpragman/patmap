@@ -49,6 +49,7 @@ def point_ingest():
 
     if authenticate_logon_form(form):
         current_data = get_data()
+        print(form)
         asset = form['asset']
 
         if asset not in current_data:
