@@ -1,12 +1,13 @@
 import time
 from pico_lte.core import PicoLTE
-from pico_lte.common import debug
+from pico_lte.utils.debug import Debug
 from pico_lte.utils.status import Status
 from machine import RTC
 import json
 from config import *
 
 rtc = RTC()
+debug = Debug(channel=3, enabled=True, level=0)
 
 # get access credentials
 with open('access.txt', 'r') as access_file:
@@ -37,9 +38,32 @@ def blink_neopixel(colorOne, colorTwo):
         time.sleep_ms(25)
 
 
+def send_over_cell(device: PicoLTE,
+                   payload: dict,
+                   debugger: Debug = debug) -> dict:
+    # send the payload over cell
+
+    device.peripherals.adjust_neopixel(*SENDING_COLOR)
+
+    # Go to WWAN prior mode and turn off GPS.
+    device.gps.set_priority(1)
+    device.gps.turn_off()
+
+    debugger.info("Sending message over cell")
+    debugger.info(f'getting network status')
+    device.network.check_network_registration()
+    debugger.info(f"Setting Context ID")
+    device.http.set_context_id()
+
+    result = device.http.post(data=json.dumps(payload))
+    debugger.info(result)
+    return result
+
+
 # loop while power is on
 # todo:  set up timer where light is only green if you've pushed a position in the last 5 minutes, for now just learning
 last_fix_ingest = 0  # clean slate when we start up
+point_buffer = []
 
 picoLTE = PicoLTE()
 picoLTE.http.set_server_url(POINT_INGEST_URL)
@@ -59,63 +83,67 @@ while True:
         result = picoLTE.gps.get_location()
 
         if result["status"] == Status.SUCCESS:
-            debug.debug("GPS Fixed. Getting location data...")
+            debug.info("GPS Fixed. Getting location data...")
+            picoLTE.peripherals.adjust_neopixel(*FIXED_COLOR)
+
             loc = result.get("value")
             lat, lon = loc
-            debug.info(result)
-            break
+            debug.info("results:", result)
+
+            try:
+                # try to reset the clock, if that works great, if that doesn't
+                # the result was actually in error
+                rtc.datetime(gps_time_to_rtc_time(result))
+                # add to the front of the list
+                point_buffer.insert(
+                    {"asset": ASSET_NAME,
+                     'password': pword,
+                     "timestamp": time.time(),
+                     "latitude": lat, "longitude": lon,
+                     "data": result['response']}, 0)
+
+                break
+
+            except:
+                # if that didn't work, just continue to the top of the loop again
+                result["status"] = Status.ERROR
+                picoLTE.peripherals.adjust_neopixel(*ERROR_COLOR)
         else:
-            # if you have no fix, make the light red
+            # if you have no fix, log it
             debug.info(result)
             debug.info(f'time since last ingest {time.time() - last_fix_ingest}')
+            picoLTE.peripherals.adjust_neopixel(*NOT_FIXED_COLOR)
 
         time.sleep(2)
 
-    # if time since the last
-    if time.time() - last_fix_ingest >= MAX_TIME_BETWEEN_UPDATES // 2:
-        # turn the smart pixel blue to indicate you have a fix, but it hasn't sent yet
-        picoLTE.peripherals.adjust_neopixel(*SENDING_COLOR)
+    if point_buffer:
+        # if we've got points in the point_buffer
+        debug.info(f'{len(point_buffer)} points to send...')
 
-        # reset the clock with
-        try:
-            rtc.datetime(gps_time_to_rtc_time(result))
-        except:
-            # if that didn't work, just continue to the top of the loop again
-            continue
+        if time.time() - last_fix_ingest >= MAX_TIME_BETWEEN_UPDATES // 2:
+            results = [send_over_cell(picoLTE, packet) for packet in point_buffer]
+            debug.info(f'collating results')
+            debug.info(results)
+            results_status = [r['status'] for r in results]
 
-        data = {
-            "asset": ASSET_NAME,
-            'password': pword,
-            "timestamp": time.time(),
-            "latitude": lat, "longitude": lon,
-            "data": result['response']
-        }
+            if results_status[0] == Status.SUCCESS:
+                picoLTE.peripherals.adjust_neopixel(*STATUS_GOOD_COLOR)
+                debug.info(f"Message sent successfully.")
+                last_fix_ingest = time.time()
+                # now remove the most recent point from the points buffer
+            else:
+                # try wifi
+                picoLTE.peripherals.adjust_neopixel(*STATUS_ERROR_COLOR)
 
-        # Go to WWAN prior mode and turn off GPS.
-        picoLTE.gps.set_priority(1)
-        picoLTE.gps.turn_off()
-
-        # something may be going wrong in here... not sure what - debugs.info for information as I'm running it
-        debug.info("Sending message to the server...")
-        debug.info("Connecting to Cell Network:")
-        debug.info(f'getting network status: {picoLTE.network.check_network_registration()}')
-        debug.info(f"Setting Context ID: {picoLTE.http.set_context_id()}")
-
-        result = picoLTE.http.post(data=json.dumps(data))
-        debug.info(result)
-
-        if result["status"] == Status.SUCCESS:
-            # turn the neopixel to green!  cool
-            picoLTE.peripherals.adjust_neopixel(*STATUS_GOOD_COLOR)
-
-            debug.info("Message sent successfully.")
-            last_fix_ingest = time.time()
-        else:
-            picoLTE.peripherals.adjust_neopixel(*STATUS_ERROR_COLOR)
-            debug.error(result["status"])
+            # now clean up
+            debug.info(f'tidy up!')
+            for i, status in enumerate(results_status):
+                if status == Status.SUCCESS:
+                    point_buffer.pop(i)
 
     # blink neopixel between error and red if you have exceeded the allowable time
     if time.time() - last_fix_ingest >= MAX_TIME_BETWEEN_UPDATES:
+        debug.error("cannot send data!")
         blink_neopixel(STATUS_ERROR_COLOR, ALERT_COLOR)
 
     time.sleep(30)  # 30 seconds between each request.
