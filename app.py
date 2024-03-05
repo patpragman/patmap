@@ -1,10 +1,12 @@
-from flask import Flask, jsonify, render_template, request, redirect, abort, send_from_directory
+from flask import Flask, jsonify, render_template, request, redirect, abort, send_from_directory, send_file, Response
 import json
 import os
 import logging
 from hashlib import sha256
 from datetime import datetime as dt
-
+from io import BytesIO
+import pandas as pd
+import zipfile
 # Configure logging
 logging.basicConfig(filename='positions.log', level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
@@ -83,6 +85,26 @@ def point_ingest():
 @app.route('/positions')
 def positions():
     return jsonify(get_data())
+
+@app.route('/export')
+def export():
+    # get the current data
+    data = get_data()
+    memory_file = BytesIO()
+    # Create a ZIP file in memory
+    with zipfile.ZipFile(memory_file, 'w') as zf:
+
+        for key, value in data.items():
+            filename = f"{key}.csv"
+            df = pd.DataFrame(value)
+            csv_string = df.to_csv(index=False)
+
+            # Convert CSV string to bytes and add to ZIP
+            zf.writestr(filename, csv_string)
+
+    # seek to the beginning of the memory file
+    memory_file.seek(0)
+    return Response(memory_file, mimetype='application/zip', headers={'Content-Disposition': 'attachment;filename=csv_files.zip'})
 
 
 @app.route('/manual_update')
