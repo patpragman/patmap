@@ -24,8 +24,6 @@ clearButton.addEventListener('click', function() {
 
 
 
-
-
 // initiate the map, center it on anchorage, get the timezone and other options
 
 // const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
