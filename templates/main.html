@@ -20,22 +20,6 @@
     <!-- flatpickr JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const today = new Date();
-            const yesterday = new Date(today);
-            yesterday.setDate(today.getDate() - 1);
-
-            const nextYear = new Date(today);
-            nextYear.setFullYear(today.getFullYear() + 1);
-
-            flatpickr("#datetimePicker", {
-                enableTime: true,
-                dateFormat: "Y-m-d H:i",
-                defaultDate: [yesterday, nextYear]
-            });
-        });
-    </script>
 </head>
 
 <body>
@@ -52,13 +36,18 @@
                     <br>
                 </div>
 
-                <div class="col">
-                    <div id="map" style="position: relative; height: 400px; width: 75%"></div>
+                <div  class="col">
+                    <div  id="map" style="position: relative; height: 400px; width: 75%">
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/render_points.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='js/render_points.js') }}">
+
+    </script>
+    </script>
 </body>
 </html>

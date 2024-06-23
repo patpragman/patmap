@@ -1,6 +1,7 @@
 
 // this code initializes the date picker properly.
-let maximumLookbackDate = new Date(1970, 1, 1);
+let maximumLookbackDate = new Date();
+maximumLookbackDate.setDate(maximumLookbackDate.getDate() - 1);
 let farthestLookbackDate = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
 
 const fp = flatpickr("#datetimePicker", {
@@ -42,7 +43,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 // Add a dot marker to the map
 const dot_icon = L.icon({
     iconUrl: "/image/dot.png",
-    iconSize: [16, 16],
+    iconSize: [8, 8],
     iconAnchor: [8, 8],
 });
 
